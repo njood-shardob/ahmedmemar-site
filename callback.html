@@ -1,35 +1,64 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>TikTok Callback</title>
+<meta charset="UTF-8">
+<title>TikTok Callback</title>
 </head>
 <body>
-  <h2>TikTok Authorization</h2>
-  <p id="status">Processing...</p>
 
-  <script>
-    const params = new URLSearchParams(window.location.search);
+<h2>TikTok Authorization</h2>
 
-    const code = params.get("code");
-    const state = params.get("state");
-    const error = params.get("error");
+<pre id="result">Processing...</pre>
 
-    if (error) {
-      document.getElementById("status").innerText =
-        "Authorization failed: " + error;
-    } else if (code) {
-      document.getElementById("status").innerText =
-        "Authorization code received successfully.";
+<script>
 
-      console.log("Authorization Code:", code);
-      console.log("State:", state);
+const params = new URLSearchParams(window.location.search);
 
-      // سنضيف لاحقًا إرسال الكود إلى n8n
-    } else {
-      document.getElementById("status").innerText =
-        "No authorization code found.";
-    }
-  </script>
+const code = params.get("code");
+const state = params.get("state");
+const error = params.get("error");
+
+const verifier = sessionStorage.getItem("code_verifier");
+
+if(error){
+
+document.getElementById("result").textContent =
+`Error:
+${error}`;
+
+}
+else if(code){
+
+document.getElementById("result").textContent =
+`Authorization Code
+
+${code}
+
+--------------------------------
+
+Code Verifier
+
+${verifier}
+
+--------------------------------
+
+State
+
+${state}`;
+
+console.log("Authorization Code:",code);
+console.log("Code Verifier:",verifier);
+console.log("State:",state);
+
+}
+else{
+
+document.getElementById("result").textContent =
+"No authorization code found.";
+
+}
+
+</script>
+
 </body>
 </html>

@@ -1,56 +1,49 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Login with TikTok</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login with TikTok</title>
 </head>
+
 <body>
 
 <h2>Login with TikTok</h2>
-
-<button onclick="login()">Login with TikTok</button>
+<button type="button" onclick="login()">Login with TikTok</button>
 
 <script>
+const CLIENT_KEY = "ضعي_هنا_SANDBOX_CLIENT_KEY";
 
-const CLIENT_KEY = "sbawi3g756m1s9zotr";
+const REDIRECT_URI =
+  "https://njood-shardob.github.io/ahmedmemar-site/callback.html";
 
-const REDIRECT_URI = "https://njood-shardob.github.io/ahmedmemar-site/callback.html";
+function createState() {
+  const bytes = new Uint8Array(32);
+  crypto.getRandomValues(bytes);
 
-function randomString(length){
-    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-    let result = "";
-    for(let i = 0; i < length; i++){
-        result += chars.charAt(Math.floor(Math.random() * chars.length));
-    }
-    return result;
+  return Array.from(bytes)
+    .map(byte => byte.toString(16).padStart(2, "0"))
+    .join("");
 }
 
-async function sha256(text){
-    const data = new TextEncoder().encode(text);
-    const hash = await crypto.subtle.digest("SHA-256", data);
+function login() {
+  const state = createState();
 
-    return btoa(String.fromCharCode(...new Uint8Array(hash)))
-        .replace(/\+/g, "-")
-        .replace(/\//g, "_")
-        .replace(/=+$/, "");
+  sessionStorage.setItem("tiktok_oauth_state", state);
+
+  const params = new URLSearchParams({
+    client_key: CLIENT_KEY,
+    scope: "user.info.basic,video.upload",
+    response_type: "code",
+    redirect_uri: REDIRECT_URI,
+    state: state,
+    disable_auto_auth: "1"
+  });
+
+  window.location.href =
+    "https://www.tiktok.com/v2/auth/authorize/?" +
+    params.toString();
 }
-
-async function login(){
-
-    const codeVerifier = randomString(64);
-
-    sessionStorage.setItem("code_verifier", codeVerifier);
-
-    const challenge = await sha256(codeVerifier);
-
-    const state = randomString(16);
-
-    const url =
-`https://www.tiktok.com/v2/auth/authorize/?client_key=${CLIENT_KEY}&scope=user.info.basic,video.upload&response_type=code&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&state=${state}&code_challenge=${challenge}&code_challenge_method=S256`;
-
-    location.href = url;
-}
-
 </script>
 
 </body>

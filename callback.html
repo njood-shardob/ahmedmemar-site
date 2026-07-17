@@ -1,63 +1,62 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>TikTok Callback</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TikTok Callback</title>
 </head>
+
 <body>
 
 <h2>TikTok Authorization</h2>
-
 <pre id="result">Processing...</pre>
 
 <script>
-
+const result = document.getElementById("result");
 const params = new URLSearchParams(window.location.search);
 
 const code = params.get("code");
 const state = params.get("state");
 const error = params.get("error");
+const errorDescription = params.get("error_description");
 
-const verifier = sessionStorage.getItem("code_verifier");
+const expectedState =
+  sessionStorage.getItem("tiktok_oauth_state");
 
-if(error){
+if (error) {
+  result.textContent =
+`TikTok Authorization Error
 
-document.getElementById("result").textContent =
-`Error:
-${error}`;
+Error:
+${error}
 
+Description:
+${errorDescription || "No description returned"}`;
 }
-else if(code){
+else if (!code) {
+  result.textContent =
+    "No authorization code was returned.";
+}
+else if (!expectedState || state !== expectedState) {
+  result.textContent =
+`Security Error
 
-document.getElementById("result").textContent =
+The returned state does not match the original state.
+Start the TikTok login process again.`;
+}
+else {
+  sessionStorage.removeItem("tiktok_oauth_state");
+
+  result.textContent =
 `Authorization Code
 
 ${code}
 
 --------------------------------
 
-Code Verifier
-
-${verifier}
-
---------------------------------
-
-State
-
-${state}`;
-
-console.log("Authorization Code:",code);
-console.log("Code Verifier:",verifier);
-console.log("State:",state);
-
+Copy this code exactly into n8n.
+Do not reuse it.`;
 }
-else{
-
-document.getElementById("result").textContent =
-"No authorization code found.";
-
-}
-
 </script>
 
 </body>
